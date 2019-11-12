@@ -7,12 +7,12 @@
 
 static void process(const struct vht::s *session)
 {
-	string::string buffer = string::create(VHOST_TEMPLATE);
+	autofree string::string buffer = string::create(VHOST_TEMPLATE);
 	string::replace(&buffer, "[hostname]", session->hostname.bytes);
 	string::replace(&buffer, "[directory]", session->directory.bytes);
 
 	//Write the virtual host file.
-	string::string out_fp = string::create(APACHE_VHOST_DIR);
+	autofree string::string out_fp = string::create(APACHE_VHOST_DIR);
 	string::append(&out_fp, "/");
 	string::append(&out_fp, session->hostname.bytes);
 	string::append(&out_fp, ".conf");
@@ -28,7 +28,7 @@ static void process(const struct vht::s *session)
 	//Check for hosts entry.
 	fh = std::fopen(HOSTS_FP, "r");
 	if (fh != NULL) {
-		string::string hosts = string::create(fh);
+		autofree string::string hosts = string::create(fh);
 		fclose(fh);
 		if (string::find(&hosts, session->hostname.bytes) > -1) {
 			std::printf("Hostname entry for %s already exists in %s. Skipping\n",
@@ -47,15 +47,12 @@ static void process(const struct vht::s *session)
 			}
 			fclose(fh);
 		}
-
-		string::free(&hosts);
-
 	} else {
 		std::printf("Error reading hosts file from %s. Skipping.\n", HOSTS_FP);
 		fclose(fh);
 	}
 
-	string::string apache_cmd = string::create("a2ensite ");
+	autofree string::string apache_cmd = string::create("a2ensite ");
 	string::append(&apache_cmd, session->hostname.bytes);
 	string::append(&apache_cmd, ".conf && service apache2 reload");
 
@@ -64,10 +61,6 @@ static void process(const struct vht::s *session)
 	system(apache_cmd.bytes);
 	std::printf("Service apache2 reloaded.\n Browse to http://%s in your browser.\n",
 		session->hostname.bytes);
-
-	string::free(&buffer);
-	string::free(&out_fp);
-	string::free(&apache_cmd);
 }
 
 static void usage()
