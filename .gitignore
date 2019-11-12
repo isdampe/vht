@@ -1,2 +1,5 @@
-bin/*
+**/bin/*
 src/*.o
+**/src/*.o
+**/src/*.c
+**/src/*.h
